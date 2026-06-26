@@ -3,46 +3,46 @@
  *
  * SPDX-License-Identifier: MIT
  */
- 
+
 #include "crosses.dtsi"
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 #include <dt-bindings/zmk/input_transform.h>
 
 
 &default_transform {
-    col-offset = <5>;
-}; 
-
-&kscan0 {
-	col-gpios
-		= <&gpio1 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-		, <&gpio1 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-		, <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-		, <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-		, <&gpio1 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-		
-		;
+    col-offset = <6>;
 };
 
-// trackball bus
+&kscan0 {
+    // 6 columns (official Crosses 54 right): outer col gpio0 8 added vs the 36 build
+    col-gpios
+        = <&gpio1 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+        , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+        , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+        , <&gpio1 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+        , <&gpio1 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+        , <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+        ;
+};
+
+// trackball bus (GCY03 verified pins for this AliExpress board: spi0, irq gpio0 6)
 &spi0 {
     cs-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
 
-  trackball_central: trackball_central@0 {
+    trackball_central: trackball_central@0 {
         status = "okay";
-    	compatible = "pixart,pmw3610-efogtech";
+        compatible = "pixart,pmw3610-efogtech";
         reg = <0>;
         spi-max-frequency = <2000000>;
         irq-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
         cpi = <900>;
-    	xy-swap;
-    	evt-type = <INPUT_EV_REL>;
-    	x-input-code = <INPUT_REL_X>;
-    	y-input-code = <INPUT_REL_Y>;
-    	force-awake;
+        xy-swap;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+        force-awake;
     };
 };
-
 
 / {
     input_processors {
@@ -56,56 +56,45 @@
     };
 };
 
-//오토마우스 레이어 자동 이탈 설정
+// auto-mouse layer (layer 3 = Mouse) auto-exit guard.
+// excluded positions = mouse-click keys on the Mouse layer (RCLK/MCLK/LCLK)
 &zip_temp_layer {
-    excluded-positions = < //아래는 마우스키, 키맵 에디터에서 키맵 조정후 맞춰야함
-		13 // F 좌클릭
-		14 // G 우클릭
-    >;
-	require-prior-idle-ms = <300>; //레이어 전환 오작동 방지
+    excluded-positions = <26 27 28>;
+    require-prior-idle-ms = <300>;
 };
 
-//왼쪽 신호 수신
+// LEFT trackball = scroll only (inverted direction, 2/3 speed)
 &trackball_peripheral_listener {
-	status = "okay";
-	input-processors = <
-		&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
-		&zip_scroll_x_scaler 0 1 //가로 스크롤 제한
-		&zip_scroll_scaler 2 75 //스크롤 속도 조절 (기존 1/25 -> 2/75, 2/3로 감속)
-	>;
+    status = "okay";
+    input-processors = <
+        &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
+        &zip_scroll_x_scaler 0 1 //가로 스크롤 제한
+        &zip_scroll_scaler 2 75 //스크롤 속도 2/3 감속
+    >;
 };
 
+// RIGHT trackball = cursor + auto-mouse layer + precision(hold)
 &trackball_central_listener {
     status = "okay";
     device = <&trackball_central>;
     input-processors = <
-		&zip_ble_report_rate_limit
-		&zip_temp_layer 3 3000 //오토마우스 레이어 1000 = 1초
->;
-	//스크롤 레이어 설정
-    scroller {
-        layers = <2>; //레이어 지정
-        input-processors = <
-            &zip_xy_to_scroll_mapper
-			&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전
-			&zip_scroll_x_scaler 0 1 //가로 스크롤 제한
-            &zip_scroll_scaler 1 30 //스크롤 속도 조절 (기존 1/20 -> 1/30, 2/3로 감속)
-        >;
-    };
+        &zip_ble_report_rate_limit
+        &zip_temp_layer 3 3000 //오토마우스 레이어 (레이어 3 = Mouse)
+    >;
 
-	//스나이프 레이어 설정 (자동마우스 연동, 기존 유지)
+    //정밀 (오토마우스 레이어 연동)
     snipe {
-        layers = <3>; //레이어 지정
+        layers = <3>;
         input-processors = <
-            &zip_xy_scaler 1 2 //포인팅 속도 조절
+            &zip_xy_scaler 1 2
         >;
     };
 
-	//정밀모드(버튼 홀드용) - 레이어 6 활성 시 오른쪽 트랙볼 커서 1/2 속도
+    //정밀모드(버튼 홀드용) - 레이어 4 (Snipe_Hold) 활성 시 커서 1/2 속도
     snipe_hold {
-        layers = <6>; //레이어 6 = Snipe_Hold (&mo 6 홀드 시)
+        layers = <4>;
         input-processors = <
-            &zip_xy_scaler 1 2 //정밀모드 커서 속도 (1/2). 더 느리게 하려면 1 3
+            &zip_xy_scaler 1 2 //더 느리게 하려면 1 3
         >;
     };
 };
