@@ -53,6 +53,15 @@
             codes = <INPUT_REL_HWHEEL>;
             track-remainders;
         };
+
+        // 커서 감도 보정용 (세로/가로 동시). snipe 와 별도 노드 → remainder 충돌 방지
+        zip_xy_sens_scaler: zip_xy_sens_scaler {
+            compatible = "zmk,input-processor-scaler";
+            #input-processor-cells = <2>;
+            type = <INPUT_EV_REL>;
+            codes = <INPUT_REL_X INPUT_REL_Y>;
+            track-remainders;
+        };
     };
 };
 
@@ -68,8 +77,8 @@
     status = "okay";
     input-processors = <
         &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
-        &zip_scroll_x_scaler 1 30 //가로 스크롤 넓게 (트랙패드 느낌)
-        &zip_scroll_scaler 2 75 //세로 스크롤 속도 2/3 감속
+        &zip_scroll_x_scaler 1 2 //가로 스크롤 = 세로의 약 절반. 이전 1/30(가로 30배 죽임) → 15배 회복
+        &zip_scroll_scaler 2 75 //세로/가로 공통 스크롤 속도(가로도 동일 적용 → 세로와 동급)
     >;
 };
 
@@ -79,6 +88,7 @@
     device = <&trackball_central>;
     input-processors = <
         &zip_ble_report_rate_limit
+        &zip_xy_sens_scaler 11 10 //커서 감도 +10% (base → snipe 레이어에도 누적 적용)
         &zip_temp_layer 3 5000 //오토마우스 레이어 (레이어 3 = Mouse), 나가기 5초
     >;
 
