@@ -93,11 +93,19 @@
         >;
     };
 
-	//스나이프 레이어 설정
+	//스나이프 레이어 설정 (자동마우스 연동, 기존 유지)
     snipe {
         layers = <3>; //레이어 지정
         input-processors = <
             &zip_xy_scaler 1 2 //포인팅 속도 조절
+        >;
+    };
+
+	//정밀모드(버튼 홀드용) - 레이어 6 활성 시 오른쪽 트랙볼 커서 1/2 속도
+    snipe_hold {
+        layers = <6>; //레이어 6 = Snipe_Hold (&mo 6 홀드 시)
+        input-processors = <
+            &zip_xy_scaler 1 2 //정밀모드 커서 속도 (1/2). 더 느리게 하려면 1 3
         >;
     };
 };
