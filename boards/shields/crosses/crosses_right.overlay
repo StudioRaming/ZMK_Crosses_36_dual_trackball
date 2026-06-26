@@ -69,6 +69,7 @@
 &trackball_peripheral_listener {
 	status = "okay";
 	input-processors = <
+		&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
 		&zip_scroll_x_scaler 0 1 //가로 스크롤 제한
 		&zip_scroll_scaler 1 25 //스크롤 속도 조절
 	>;
