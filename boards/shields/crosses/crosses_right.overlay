@@ -68,7 +68,7 @@
     status = "okay";
     input-processors = <
         &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
-        &zip_scroll_x_scaler 2 75 //가로 스크롤 살림 (세로와 같은 2/3 속도)
+        &zip_scroll_x_scaler 1 30 //가로 스크롤 넓게 (트랙패드 느낌)
         &zip_scroll_scaler 2 75 //세로 스크롤 속도 2/3 감속
     >;
 };
