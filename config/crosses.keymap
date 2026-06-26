@@ -10,6 +10,16 @@
 };
 
 / {
+    combos {
+        compatible = "zmk,combos";
+        // ZMK Studio unlock = press the two inner keys (T-pos + Y-pos) together
+        combo_studio_unlock {
+            timeout-ms = <100>;
+            key-positions = <17 18>;
+            bindings = <&studio_unlock>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
