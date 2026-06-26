@@ -77,7 +77,7 @@
     status = "okay";
     input-processors = <
         &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
-        &zip_scroll_x_scaler 1 2 //가로 스크롤 = 세로의 약 절반. 이전 1/30(가로 30배 죽임) → 15배 회복
+        &zip_scroll_x_scaler 1 1 //가로 = 세로 동일(×1). 이전 1/30 은 가로를 30배 죽였음
         &zip_scroll_scaler 2 75 //세로/가로 공통 스크롤 속도(가로도 동일 적용 → 세로와 동급)
     >;
 };
