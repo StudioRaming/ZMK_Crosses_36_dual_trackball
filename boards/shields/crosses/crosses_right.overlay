@@ -60,7 +60,7 @@
 // excluded positions = mouse-click keys on the Mouse layer (RCLK/MCLK/LCLK)
 &zip_temp_layer {
     excluded-positions = <26 27 28>;
-    require-prior-idle-ms = <300>;
+    require-prior-idle-ms = <0>; //진입 즉시 (타이핑 직후에도 트랙볼 움직이면 바로)
 };
 
 // LEFT trackball = scroll only (inverted direction, 2/3 speed)
@@ -68,8 +68,8 @@
     status = "okay";
     input-processors = <
         &zip_scroll_transform INPUT_TRANSFORM_Y_INVERT //세로 스크롤 방향 반전 (휠 굴리는 방향)
-        &zip_scroll_x_scaler 0 1 //가로 스크롤 제한
-        &zip_scroll_scaler 2 75 //스크롤 속도 2/3 감속
+        &zip_scroll_x_scaler 2 75 //가로 스크롤 살림 (세로와 같은 2/3 속도)
+        &zip_scroll_scaler 2 75 //세로 스크롤 속도 2/3 감속
     >;
 };
 
@@ -79,7 +79,7 @@
     device = <&trackball_central>;
     input-processors = <
         &zip_ble_report_rate_limit
-        &zip_temp_layer 3 3000 //오토마우스 레이어 (레이어 3 = Mouse)
+        &zip_temp_layer 3 5000 //오토마우스 레이어 (레이어 3 = Mouse), 나가기 5초
     >;
 
     //정밀 (오토마우스 레이어 연동)
